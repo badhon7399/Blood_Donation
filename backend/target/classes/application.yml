@@ -1,0 +1,26 @@
+server:
+  port: 8080
+
+spring:
+  data:
+    mongodb:
+      uri: mongodb://localhost:27017/blood_donation
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: ${MAIL_USERNAME:your-email@gmail.com}
+    password: ${MAIL_PASSWORD:your-app-password}
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+
+jwt:
+  secret: ${JWT_SECRET:Ymxvb2Rkb25hdGlvbnNlY3JldGtleXRoYXRpc2xvbmdlbm91Z2hmb3JoczI1Ng==}
+  expiration: 86400000
+
+app:
+  cors:
+    allowed-origins: http://localhost:5173
