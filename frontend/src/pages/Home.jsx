@@ -56,7 +56,7 @@ const Home = () => (
         <h2 className="section-title-dark">Because Every Drop Counts</h2>
         <div className="section-divider">
           <span className="divider-line"></span>
-          <Droplet size={14} fill="#d71920" color="#d71920" />
+          <Droplet size={14} fill="#b80f1d" color="#b80f1d" />
           <span className="divider-line"></span>
         </div>
       </div>
@@ -64,28 +64,28 @@ const Home = () => (
       <div className="features-grid">
         <div className="feature-card">
           <div className="feature-icon-wrapper">
-            <Heart size={28} color="#d71920" />
+            <Heart size={28} color="#b80f1d" />
           </div>
           <h3>Saves Lives</h3>
           <p>One donation can save up to three lives.</p>
         </div>
         <div className="feature-card">
           <div className="feature-icon-wrapper">
-            <Shield size={28} color="#d71920" />
+            <Shield size={28} color="#b80f1d" />
           </div>
           <h3>Safe & Simple</h3>
           <p>A safe process that takes less than an hour.</p>
         </div>
         <div className="feature-card">
           <div className="feature-icon-wrapper">
-            <Users size={28} color="#d71920" />
+            <Users size={28} color="#b80f1d" />
           </div>
           <h3>Helps Many</h3>
           <p>Supports accident victims, surgery patients, and more.</p>
         </div>
         <div className="feature-card">
           <div className="feature-icon-wrapper">
-            <Smile size={28} color="#d71920" />
+            <Smile size={28} color="#b80f1d" />
           </div>
           <h3>Feel Good</h3>
           <p>Experience the joy of making a real difference.</p>
@@ -127,7 +127,7 @@ const Home = () => (
           Ready to Make<br/>
           a <span className="text-red">Difference?</span>
           <svg className="cta-heart-scribble" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
-             <path d="M50 85 C10 50 10 15 30 10 C45 5 50 20 50 20 C50 20 55 5 70 10 C90 15 90 50 50 85 Z" stroke="#d71920" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"/>
+             <path d="M50 85 C10 50 10 15 30 10 C45 5 50 20 50 20 C50 20 55 5 70 10 C90 15 90 50 50 85 Z" stroke="#b80f1d" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"/>
           </svg>
         </h2>
         <p className="cta-subtext">
@@ -145,7 +145,7 @@ const Home = () => (
 
     {/* ── Footer Strip ──────────────────────── */}
     <footer className="footer-strip container">
-      <Droplet size={14} fill="#d71920" color="#d71920" />
+      <Droplet size={14} fill="#b80f1d" color="#b80f1d" />
       <p>Give Blood. Give Hope. <strong className="text-red">Together,</strong> we can save more lives.</p>
     </footer>
 

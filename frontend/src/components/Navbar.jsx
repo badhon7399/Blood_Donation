@@ -42,11 +42,11 @@ const Navbar = () => {
 
         {/* Logo */}
         <Link to="/" className="navbar__logo">
-          <svg className="navbar__logo-icon" width="28" height="32" viewBox="0 0 24 24" fill="#d71920" xmlns="http://www.w3.org/2000/svg">
+          <svg className="navbar__logo-icon" width="28" height="32" viewBox="0 0 24 24" fill="#b80f1d" xmlns="http://www.w3.org/2000/svg">
             <path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z" />
           </svg>
           <div className="navbar__logo-text-wrapper">
-            <span className="navbar__logo-text">LifeFlow</span>
+            <span className="navbar__logo-text">LifeStream</span>
             <span className="navbar__logo-subtext">Give Blood. <span className="highlight-red">Save Lives.</span></span>
           </div>
         </Link>

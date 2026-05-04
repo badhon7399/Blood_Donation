@@ -220,7 +220,7 @@
   background:
     radial-gradient(circle at 30% 24%, rgba(255,255,255,0.78), transparent 28%),
     radial-gradient(circle at 70% 72%, rgba(184, 15, 29, 0.14), transparent 38%),
-    linear-gradient(135deg, #fff8f8 0%, #ffd7dc 58%, #d71920 150%);
+    linear-gradient(135deg, #fff8f8 0%, #ffd7dc 58%, #b80f1d 150%);
   border-radius: 40% 60% 70% 30% / 40% 50% 60% 50%;
   right: -1%;
   top: 50%;
