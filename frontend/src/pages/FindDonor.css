@@ -1,0 +1,200 @@
+/* ── Page ────────────────────────────────── */
+.find-donor { padding-bottom: 5rem; }
+
+.find-donor__header {
+  padding: 4rem 1.5rem 2rem;
+  text-align: center;
+}
+.find-donor__title { font-size: clamp(2rem, 4vw, 3rem); margin-bottom: 0.75rem; }
+.find-donor__sub   { color: var(--text-2); font-size: 1.05rem; }
+
+/* ── Search Panel ───────────────────────── */
+.search-panel { padding: 2rem; border-radius: var(--radius-xl); }
+
+.search-panel__form {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+  align-items: flex-end;
+}
+.search-panel__field { flex: 1; min-width: 180px; }
+.search-panel__actions { display: flex; gap: 0.5rem; align-items: flex-end; padding-bottom: 0; }
+
+/* Icon-wrapped select */
+.select-wrapper { position: relative; }
+.select-icon {
+  position: absolute;
+  left: 0.875rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--text-2);
+  pointer-events: none;
+  z-index: 1;
+}
+.select-icon-right {
+  position: absolute;
+  right: 2.5rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--text-2);
+  pointer-events: none;
+  z-index: 1;
+  display: none; /* keep native arrow */
+}
+.form-control--icon { padding-left: 2.5rem; }
+
+/* ── Results Bar ────────────────────────── */
+.find-donor__results-wrapper { padding-top: 2rem; }
+
+.results-bar {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+  padding-bottom: 1.25rem;
+  border-bottom: 1px solid var(--border);
+}
+.results-count {
+  font-size: 0.9rem;
+  color: var(--text-2);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+.results-count strong { color: var(--text-1); font-size: 1rem; }
+.results-tag {
+  padding: 0.2rem 0.6rem;
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.2);
+  border-radius: var(--radius-full);
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--primary-light);
+}
+
+/* Blood group quick filters */
+.bg-filters {
+  display: flex;
+  gap: 0.375rem;
+  flex-wrap: wrap;
+  margin-left: auto;
+}
+.bg-filter-btn {
+  padding: 0.3rem 0.7rem;
+  border-radius: var(--radius-full);
+  font-size: 0.75rem;
+  font-weight: 700;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  color: var(--text-2);
+  cursor: pointer;
+  transition: all var(--transition);
+  letter-spacing: 0.03em;
+}
+.bg-filter-btn:hover {
+  background: color-mix(in srgb, var(--c) 15%, transparent);
+  border-color: color-mix(in srgb, var(--c) 40%, transparent);
+  color: var(--c);
+}
+.bg-filter-btn.active {
+  background: color-mix(in srgb, var(--c) 20%, transparent);
+  border-color: color-mix(in srgb, var(--c) 50%, transparent);
+  color: var(--c);
+}
+
+/* ── Donor Cards ────────────────────────── */
+.donors-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 1.25rem;
+}
+
+.donor-card {
+  display: flex;
+  flex-direction: column;
+  padding: 0;
+  overflow: hidden;
+  border-radius: var(--radius-lg);
+  transition: all var(--transition);
+}
+.donor-card:hover { transform: translateY(-4px); }
+
+.donor-card__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1.25rem 1.25rem 1rem;
+  border-bottom: 1px solid;
+}
+.donor-card__avatar {
+  width: 44px; height: 44px;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+}
+.donor-card__blood-pill {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.3rem 0.75rem;
+  border-radius: var(--radius-full);
+  font-weight: 800;
+  font-size: 0.875rem;
+  letter-spacing: 0.04em;
+}
+
+.donor-card__body { padding: 1rem 1.25rem; flex: 1; }
+.donor-card__name {
+  font-size: 1.0625rem;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+  color: var(--text-1);
+}
+.donor-card__meta { margin-bottom: 0.75rem; }
+.donor-card__meta-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.8rem;
+  color: var(--text-2);
+}
+
+.donor-card__status {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 0.25rem 0.65rem;
+  border-radius: var(--radius-full);
+}
+.donor-card__status.available  { background: rgba(16,185,129,0.12); color: #6ee7b7; }
+.donor-card__status.unavailable { background: rgba(239,68,68,0.1);  color: #fca5a5; }
+.status-dot {
+  width: 7px; height: 7px;
+  border-radius: 50%;
+  animation: pulse-dot 1.8s ease-in-out infinite;
+}
+.available  .status-dot { background: #10b981; }
+.unavailable .status-dot { background: #ef4444; animation: none; }
+
+.donor-card__cta {
+  margin: 0 1.25rem 1.25rem;
+  width: auto !important;
+  border-radius: var(--radius-md) !important;
+  font-size: 0.875rem;
+}
+
+/* ── No Results ─────────────────────────── */
+.no-results {
+  grid-column: 1 / -1;
+  padding: 5rem 2rem;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+}
+.no-results__icon { color: var(--text-3); }
+.no-results h3 { color: var(--text-2); font-size: 1.25rem; }
+.no-results p  { color: var(--text-3); }
