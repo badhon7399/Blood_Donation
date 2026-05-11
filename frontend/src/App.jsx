@@ -6,7 +6,8 @@ import Home from './pages/Home';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import DonorDashboard from './pages/DonorDashboard';
-import UnderDevelopment from './pages/UnderDevelopment';
+import FindDonor from './pages/FindDonor';
+import CreateRequest from './pages/CreateRequest';
 
 function App() {
   return (
@@ -14,16 +15,15 @@ function App() {
       <AuthProvider>
         <div className="min-h-screen flex flex-col bg-gray-50 text-gray-900 font-sans w-full">
           <Navbar />
-          <main className="flex-grow flex flex-col">
+          <main className="flex-grow flex flex-col w-full">
             <Routes>
               <Route path="/" element={<Home />} />
               <Route path="/login" element={<Login />} />
               <Route path="/register" element={<Register />} />
               <Route path="/donor-dashboard" element={<DonorDashboard />} />
               
-              {/* Temporarily disabled pages */}
-              <Route path="/search" element={<UnderDevelopment />} />
-              <Route path="/request" element={<UnderDevelopment />} />
+              <Route path="/search" element={<FindDonor />} />
+              <Route path="/request" element={<CreateRequest />} />
             </Routes>
           </main>
         </div>

@@ -2,7 +2,7 @@ import { Link, useLocation } from 'react-router-dom';
 import { Wrench, ArrowLeft, Droplet } from 'lucide-react';
 
 const PAGE_LABELS = {
-  '/search':  'Find Donor',
+  '/search': 'Find Donor',
   '/request': 'Request Blood',
 };
 

@@ -1,216 +1,358 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { Search, MapPin, Droplet, User as UserIcon, Phone, X } from 'lucide-react';
+import {
+  Search, MapPin, Droplet, User as UserIcon, Phone,
+  X, ChevronDown, Heart, Clock,
+} from 'lucide-react';
 import { DUMMY_DONORS } from '../data/dummyDonors';
 
 const BLOOD_GROUPS = ['A+', 'A-', 'B+', 'B-', 'O+', 'O-', 'AB+', 'AB-'];
-
 const LOCATIONS = [...new Set(DUMMY_DONORS.map(d => d.location))].sort();
 
-const bloodGroupColor = (bg) => {
-  const map = {
-    'A+': '#ef4444', 'A-': '#f97316',
-    'B+': '#3b82f6', 'B-': '#8b5cf6',
-    'O+': '#10b981', 'O-': '#06b6d4',
-    'AB+': '#ec4899', 'AB-': '#f59e0b',
-  };
-  return map[bg] || '#ef4444';
+const BG_COLORS = {
+  'A+':  { bg: '#fff1f2', border: '#fecdd3', text: '#be123c', dot: '#e11d48' },
+  'A-':  { bg: '#fff7ed', border: '#fed7aa', text: '#c2410c', dot: '#ea580c' },
+  'B+':  { bg: '#eff6ff', border: '#bfdbfe', text: '#1d4ed8', dot: '#2563eb' },
+  'B-':  { bg: '#f5f3ff', border: '#ddd6fe', text: '#6d28d9', dot: '#7c3aed' },
+  'O+':  { bg: '#f0fdf4', border: '#bbf7d0', text: '#15803d', dot: '#16a34a' },
+  'O-':  { bg: '#ecfeff', border: '#a5f3fc', text: '#0e7490', dot: '#0891b2' },
+  'AB+': { bg: '#fdf2f8', border: '#f5d0fe', text: '#a21caf', dot: '#c026d3' },
+  'AB-': { bg: '#fffbeb', border: '#fde68a', text: '#b45309', dot: '#d97706' },
+};
+
+const getLastDonationDays = (dateStr) => {
+  if (!dateStr) return null;
+  return Math.floor((Date.now() - new Date(dateStr)) / 86400000);
 };
 
 const DonorCard = ({ donor }) => {
-  const color = bloodGroupColor(donor.bloodGroup);
+  const c = BG_COLORS[donor.bloodGroup] || BG_COLORS['A+'];
+  const days = getLastDonationDays(donor.lastDonation);
+  const isAvailable = donor.status === 'Available';
+
   return (
-    <article className="flex flex-col overflow-hidden rounded-2xl bg-white/80 backdrop-blur-md border border-gray-200/50 shadow-lg transition-all hover:-translate-y-1 hover:shadow-xl">
-      {/* Blood Group badge */}
-      <div className="flex items-center justify-between p-5 pb-4 border-b" style={{ borderColor: `${color}30` }}>
-        <div className="w-11 h-11 rounded-full flex items-center justify-center" style={{ background: `${color}18`, color }}>
-          <UserIcon size={22} />
+    <article className="group flex flex-col bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-300 overflow-hidden">
+      {/* Top color accent */}
+      <div className="h-1.5 w-full" style={{ background: `linear-gradient(90deg, ${c.dot}, ${c.dot}66)` }} />
+
+      {/* Card header */}
+      <div className="flex items-center justify-between px-6 pt-5 pb-4">
+        <div className="flex items-center gap-4">
+          {/* Avatar */}
+          <div
+            className="w-14 h-14 rounded-2xl flex items-center justify-center text-xl font-extrabold shrink-0"
+            style={{ background: c.bg, color: c.text, border: `2px solid ${c.border}` }}
+          >
+            {donor.name.charAt(0)}
+          </div>
+          <div>
+            <h3 className="font-bold text-gray-900 text-base leading-tight">{donor.name}</h3>
+            <span className="inline-flex items-center gap-1 text-xs text-gray-500 mt-1">
+              <MapPin size={12} className="text-gray-400" />
+              {donor.area}, {donor.location}
+            </span>
+          </div>
         </div>
-        <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full font-extrabold text-sm tracking-wide" style={{ background: `${color}18`, color, border: `1px solid ${color}40` }}>
-          <Droplet size={13} fill="currentColor" />
+
+        {/* Blood group badge */}
+        <div
+          className="flex items-center gap-1.5 px-3 py-2 rounded-xl font-extrabold text-sm tracking-wide shrink-0"
+          style={{ background: c.bg, color: c.text, border: `1.5px solid ${c.border}` }}
+        >
+          <Droplet size={12} fill="currentColor" />
           {donor.bloodGroup}
         </div>
       </div>
 
-      <div className="p-4 px-5 flex-1">
-        <h3 className="text-[1.0625rem] font-bold text-gray-900 mb-2">{donor.name}</h3>
+      {/* Status + last donation */}
+      <div className="flex items-center justify-between px-6 pb-5">
+        <span
+          className={`inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-full border ${
+            isAvailable
+              ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
+              : 'bg-gray-50 text-gray-500 border-gray-200'
+          }`}
+        >
+          <span className={`w-1.5 h-1.5 rounded-full ${isAvailable ? 'bg-emerald-500 animate-pulse' : 'bg-gray-400'}`} />
+          {isAvailable ? 'Available' : 'Not Available'}
+        </span>
 
-        <div className="mb-3">
-          <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-gray-500">
-            <MapPin size={14} className="text-gray-400" />
-            {donor.area}, {donor.location}
+        {days !== null && (
+          <span className="inline-flex items-center gap-1 text-xs text-gray-400">
+            <Clock size={11} />
+            Last donated {days}d ago
           </span>
-        </div>
-
-        <div className={`inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider px-2.5 py-1 rounded-full ${donor.status === 'Available' ? 'bg-emerald-50 text-emerald-600 border border-emerald-200/50' : 'bg-red-50 text-red-500 border border-red-200/50'}`}>
-          <span className={`w-1.5 h-1.5 rounded-full ${donor.status === 'Available' ? 'bg-emerald-500 animate-pulse' : 'bg-red-500'}`} />
-          {donor.status}
-        </div>
+        )}
       </div>
 
-      <button
-        className="mx-5 mb-5 w-auto rounded-lg text-sm inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-white border border-gray-200 text-gray-700 font-semibold hover:bg-gray-50 transition-colors shadow-sm"
-        onClick={() => alert(`Contact info is shown after login.\n${donor.name} — ${donor.bloodGroup}`)}
-      >
-        <Phone size={15} /> Contact Donor
-      </button>
+      {/* CTA button */}
+      <div className="px-6 pb-6 mt-auto">
+        <button
+          disabled={!isAvailable}
+          onClick={() => isAvailable && alert(`Contact info shown after login.\n${donor.name} — ${donor.bloodGroup}`)}
+          className="w-full flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-bold transition-all duration-200 border"
+          style={{
+            background: isAvailable ? c.bg : '#f9fafb',
+            color: isAvailable ? c.text : '#9ca3af',
+            borderColor: isAvailable ? c.border : '#e5e7eb',
+          }}
+          onMouseEnter={e => {
+            if (isAvailable) {
+              e.currentTarget.style.background = c.dot;
+              e.currentTarget.style.color = '#fff';
+              e.currentTarget.style.borderColor = c.dot;
+            }
+          }}
+          onMouseLeave={e => {
+            if (isAvailable) {
+              e.currentTarget.style.background = c.bg;
+              e.currentTarget.style.color = c.text;
+              e.currentTarget.style.borderColor = c.border;
+            }
+          }}
+        >
+          <Phone size={14} />
+          {isAvailable ? 'Contact Donor' : 'Currently Unavailable'}
+        </button>
+      </div>
     </article>
   );
 };
 
+/* ─────────────────────────────────────────────── */
+
 const FindDonor = () => {
   const [searchParams, setSearchParams] = useSearchParams();
-  const [bloodGroup, setBloodGroup] = useState(searchParams.get('bloodGroup') || '');
-  const [location,   setLocation]   = useState(searchParams.get('location')   || '');
-  const [statusFilter, setStatusFilter] = useState('Available');
-  const [results, setResults]    = useState([]);
-  const [searched, setSearched]  = useState(false);
-  const inputRef = useRef(null);
+  const [bloodGroup, setBloodGroup]         = useState(searchParams.get('bloodGroup') || '');
+  const [location, setLocation]             = useState(searchParams.get('location') || '');
+  const [locationInput, setLocationInput]   = useState(searchParams.get('location') || '');
+  const [availability, setAvailability]     = useState('Available');
 
-  const runSearch = (bg = bloodGroup, loc = location, status = statusFilter) => {
+  /* Live results — all filters reactive */
+  const results = useMemo(() => {
     let out = DUMMY_DONORS;
-    if (bg)  out = out.filter(d => d.bloodGroup === bg);
-    if (loc) out = out.filter(d => d.location.toLowerCase().includes(loc.toLowerCase()) || d.area.toLowerCase().includes(loc.toLowerCase()));
-    if (status !== 'All') out = out.filter(d => d.status === status);
-    setResults(out);
-    setSearched(true);
+    if (bloodGroup) out = out.filter(d => d.bloodGroup === bloodGroup);
+    if (location)   out = out.filter(d =>
+      d.location.toLowerCase().includes(location.toLowerCase()) ||
+      d.area.toLowerCase().includes(location.toLowerCase())
+    );
+    if (availability !== 'All') out = out.filter(d => d.status === availability);
+    return out;
+  }, [bloodGroup, location, availability]);
+
+  const hasFilters = bloodGroup || location;
+
+  const clearAll = () => {
+    setBloodGroup(''); setLocation(''); setLocationInput('');
+    setAvailability('Available'); setSearchParams({});
   };
 
-  // Run immediately if URL has params
+  /* Debounce text → location filter */
   useEffect(() => {
-    if (searchParams.get('bloodGroup') || searchParams.get('location')) runSearch();
-    else { setResults(DUMMY_DONORS.filter(d => d.status === 'Available')); setSearched(true); }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+    const t = setTimeout(() => setLocation(locationInput), 300);
+    return () => clearTimeout(t);
+  }, [locationInput]);
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    setSearchParams({ ...(bloodGroup && { bloodGroup }), ...(location && { location }) });
-    runSearch();
-  };
+  /* Sync blood group to URL */
+  useEffect(() => {
+    const params = {};
+    if (bloodGroup) params.bloodGroup = bloodGroup;
+    if (location)   params.location   = location;
+    setSearchParams(params);
+  }, [bloodGroup, location]);
 
-  const clearSearch = () => {
-    setBloodGroup(''); setLocation(''); setSearchParams({});
-    setResults(DUMMY_DONORS.filter(d => d.status === 'Available'));
-  };
+  const totalAvailable = DUMMY_DONORS.filter(d => d.status === 'Available').length;
 
   return (
-    <div className="pb-20">
+    <div className="w-full flex flex-col min-h-[calc(100vh-64px)]">
 
-      {/* ── Page Header ─────────────────────── */}
-      <div className="w-full max-w-[1200px] mx-auto px-6 pt-16 pb-8 text-center">
-        <p className="text-sm font-bold text-[#b80f1d] uppercase tracking-wider mb-2">Real-Time Search</p>
-        <h1 className="text-[clamp(2rem,4vw,3rem)] font-bold text-gray-900 mb-3">Find a Blood Donor</h1>
-        <p className="text-gray-500 text-[1.05rem]">Search across all 64 districts of Bangladesh. Results update instantly.</p>
+      {/* ── Hero ────────────────────────────────── */}
+      <div className="w-full relative overflow-hidden bg-gradient-to-br from-[#b80f1d] via-[#9b0c18] to-[#66040c] text-white py-14 px-6 text-center">
+        {/* dot pattern */}
+        <div
+          className="absolute inset-0 opacity-10 pointer-events-none"
+          style={{
+            backgroundImage:
+              'radial-gradient(circle, white 1px, transparent 1px)',
+            backgroundSize: '40px 40px',
+          }}
+        />
+
+        <div className="relative max-w-2xl mx-auto">
+          <div className="inline-flex items-center gap-2 bg-white/20 backdrop-blur-sm border border-white/30 text-white/90 text-xs font-bold tracking-widest uppercase px-4 py-1.5 rounded-full mb-5">
+            <Heart size={12} fill="currentColor" /> Real-Time Donor Search
+          </div>
+          <h1 className="text-4xl sm:text-5xl font-extrabold mb-3 tracking-tight">Find a Blood Donor</h1>
+          <p className="text-white/75 text-base sm:text-lg">
+            Connect with <strong className="text-white">{totalAvailable} available donors</strong> across Bangladesh instantly.
+          </p>
+        </div>
+
+        {/* Stats */}
+        <div className="relative flex justify-center gap-10 sm:gap-16 mt-10 flex-wrap">
+          {[
+            { label: 'Total Donors',  value: DUMMY_DONORS.length },
+            { label: 'Available Now', value: totalAvailable },
+            { label: 'Districts',     value: LOCATIONS.length },
+            { label: 'Blood Groups',  value: 8 },
+          ].map(s => (
+            <div key={s.label} className="text-center">
+              <div className="text-3xl font-extrabold">{s.value}</div>
+              <div className="text-white/60 text-xs font-medium mt-0.5">{s.label}</div>
+            </div>
+          ))}
+        </div>
       </div>
 
-      {/* ── Search Panel ────────────────────── */}
-      <div className="w-full max-w-[1200px] mx-auto px-6">
-        <div className="p-8 rounded-3xl bg-white/80 backdrop-blur-md border border-gray-200/50 shadow-xl">
-          <form onSubmit={handleSubmit} className="flex flex-wrap items-end gap-4">
-            {/* Blood Group */}
-            <div className="flex-1 min-w-[180px]">
-              <label className="text-sm font-semibold text-gray-900 mb-2 block" htmlFor="bg-select">Blood Group</label>
-              <div className="relative">
-                <Droplet size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none z-10" />
-                <select
-                  id="bg-select"
-                  className="w-full pl-10 pr-10 py-3 rounded-xl border border-gray-200 bg-white text-gray-900 text-[0.95rem] transition-all focus:outline-none focus:border-[#b80f1d] focus:ring-4 focus:ring-[#b80f1d]/10"
-                  value={bloodGroup}
-                  onChange={e => setBloodGroup(e.target.value)}
-                >
-                  <option value="">Any Blood Group</option>
-                  {BLOOD_GROUPS.map(bg => <option key={bg} value={bg}>{bg}</option>)}
-                </select>
-              </div>
-            </div>
+      {/* ── Filter bar ──────────────────────────── */}
+      <div className="w-full bg-white border-b border-gray-100 shadow-sm sticky top-[64px] z-50">
+        <div className="w-full px-6 lg:px-12 py-4">
 
-            {/* Location */}
-            <div className="flex-1 min-w-[180px]">
-              <label className="text-sm font-semibold text-gray-900 mb-2 block" htmlFor="loc-select">District / Area</label>
-              <div className="relative">
-                <MapPin size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none z-10" />
-                <select
-                  id="loc-select"
-                  className="w-full pl-10 pr-10 py-3 rounded-xl border border-gray-200 bg-white text-gray-900 text-[0.95rem] transition-all focus:outline-none focus:border-[#b80f1d] focus:ring-4 focus:ring-[#b80f1d]/10"
-                  value={location}
-                  onChange={e => setLocation(e.target.value)}
-                >
-                  <option value="">Any Location</option>
-                  {LOCATIONS.map(l => <option key={l} value={l}>{l}</option>)}
-                </select>
-              </div>
-            </div>
-
-            {/* Availability */}
-            <div className="flex-1 min-w-[180px]">
-              <label className="text-sm font-semibold text-gray-900 mb-2 block" htmlFor="status-select">Availability</label>
-              <div className="relative">
-                <select
-                  id="status-select"
-                  className="w-full pl-4 pr-10 py-3 rounded-xl border border-gray-200 bg-white text-gray-900 text-[0.95rem] transition-all focus:outline-none focus:border-[#b80f1d] focus:ring-4 focus:ring-[#b80f1d]/10"
-                  value={statusFilter}
-                  onChange={e => { setStatusFilter(e.target.value); runSearch(bloodGroup, location, e.target.value); }}
-                >
-                  <option value="Available">Available Only</option>
-                  <option value="All">All Donors</option>
-                </select>
-              </div>
-            </div>
-
-            <div className="flex items-end gap-2">
-              <button type="submit" className="inline-flex items-center justify-center gap-2 bg-gradient-to-br from-[#d41425] via-[#b80f1d] to-[#66040c] text-white px-6 py-3.5 rounded-xl font-semibold border border-red-900/20 shadow-md hover:bg-[#66040c] hover:-translate-y-0.5 hover:shadow-lg transition-all" id="search-btn">
-                <Search size={18} /> Search
-              </button>
-              {(bloodGroup || location) && (
-                <button type="button" className="inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl font-semibold text-gray-500 hover:text-gray-900 hover:bg-gray-100 transition-all" onClick={clearSearch}>
-                  <X size={16} /> Clear
+          {/* Row 1: text search + dropdowns */}
+          <div className="flex flex-wrap gap-3 items-center">
+            {/* Text search */}
+            <div className="flex-1 min-w-[220px] relative">
+              <Search size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
+              <input
+                type="text"
+                placeholder="Search by district or area…"
+                value={locationInput}
+                onChange={e => setLocationInput(e.target.value)}
+                className="w-full pl-10 pr-9 py-2.5 rounded-xl border border-gray-200 bg-gray-50 text-sm text-gray-900 focus:bg-white focus:outline-none focus:border-[#b80f1d] focus:ring-2 focus:ring-[#b80f1d]/15 transition-all placeholder:text-gray-400"
+              />
+              {locationInput && (
+                <button onClick={() => { setLocationInput(''); setLocation(''); }}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
+                  <X size={13} />
                 </button>
               )}
             </div>
-          </form>
-        </div>
-      </div>
 
-      {/* ── Results ─────────────────────────── */}
-      <div className="w-full max-w-[1200px] mx-auto px-6 pt-8">
-        {/* Result count bar */}
-        {searched && (
-          <div className="flex flex-wrap items-center gap-4 mb-6 pb-5 border-b border-gray-200">
-            <span className="text-[0.9rem] text-gray-500 flex items-center gap-2">
-              <strong className="text-gray-900 text-base">{results.length}</strong> donor{results.length !== 1 ? 's' : ''} found
-              {bloodGroup && <span className="px-2.5 py-1 bg-red-50 border border-red-200 rounded-full text-xs font-semibold text-[#b80f1d]">{bloodGroup}</span>}
-              {location   && <span className="px-2.5 py-1 bg-red-50 border border-red-200 rounded-full text-xs font-semibold text-[#b80f1d]">{location}</span>}
-            </span>
-            {/* Blood group quick filters */}
-            <div className="flex flex-wrap gap-1.5 ml-auto">
-              {BLOOD_GROUPS.map(bg => (
+            {/* District dropdown */}
+            <div className="relative">
+              <MapPin size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none z-10" />
+              <select
+                value={location}
+                onChange={e => { setLocation(e.target.value); setLocationInput(e.target.value); }}
+                className="pl-8 pr-8 py-2.5 rounded-xl border border-gray-200 bg-gray-50 text-sm text-gray-700 appearance-none focus:bg-white focus:outline-none focus:border-[#b80f1d] focus:ring-2 focus:ring-[#b80f1d]/15 transition-all min-w-[150px]"
+              >
+                <option value="">All Districts</option>
+                {LOCATIONS.map(l => <option key={l} value={l}>{l}</option>)}
+              </select>
+              <ChevronDown size={13} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
+            </div>
+
+            {/* Availability dropdown */}
+            <div className="relative">
+              <select
+                value={availability}
+                onChange={e => setAvailability(e.target.value)}
+                className="pl-4 pr-8 py-2.5 rounded-xl border border-gray-200 bg-gray-50 text-sm text-gray-700 appearance-none focus:bg-white focus:outline-none focus:border-[#b80f1d] focus:ring-2 focus:ring-[#b80f1d]/15 transition-all min-w-[150px]"
+              >
+                <option value="Available">Available Only</option>
+                <option value="All">All Donors</option>
+              </select>
+              <ChevronDown size={13} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
+            </div>
+
+            {hasFilters && (
+              <button onClick={clearAll}
+                className="flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-sm font-semibold text-gray-500 hover:text-red-600 hover:bg-red-50 border border-gray-200 hover:border-red-200 transition-all">
+                <X size={14} /> Clear
+              </button>
+            )}
+          </div>
+
+          {/* Row 2: blood group pills */}
+          <div className="flex items-center gap-2 flex-wrap mt-3">
+            <span className="text-xs font-semibold text-gray-500 shrink-0">Blood Group:</span>
+            <button
+              onClick={() => setBloodGroup('')}
+              className={`px-3.5 py-1.5 rounded-full text-xs font-bold border transition-all ${
+                !bloodGroup
+                  ? 'bg-gray-900 text-white border-gray-900 scale-105'
+                  : 'bg-white text-gray-500 border-gray-200 hover:border-gray-400 hover:text-gray-700'
+              }`}
+            >
+              All
+            </button>
+            {BLOOD_GROUPS.map(bg => {
+              const c = BG_COLORS[bg];
+              const isActive = bloodGroup === bg;
+              return (
                 <button
                   key={bg}
-                  className={`px-3 py-1.5 rounded-full text-xs font-bold border cursor-pointer transition-all tracking-wide hover:bg-[color-mix(in_srgb,var(--c)_15%,transparent)] hover:border-[color-mix(in_srgb,var(--c)_40%,transparent)] hover:text-[var(--c)] ${bloodGroup === bg ? 'bg-[color-mix(in_srgb,var(--c)_20%,transparent)] border-[color-mix(in_srgb,var(--c)_50%,transparent)] text-[var(--c)]' : 'bg-white border-gray-200 text-gray-500'}`}
-                  style={{ '--c': bloodGroupColor(bg) }}
-                  onClick={() => { setBloodGroup(bg); runSearch(bg, location, statusFilter); }}
+                  onClick={() => setBloodGroup(isActive ? '' : bg)}
+                  className="px-3.5 py-1.5 rounded-full text-xs font-extrabold border transition-all duration-200"
+                  style={{
+                    background:   isActive ? c.dot : c.bg,
+                    color:        isActive ? '#fff' : c.text,
+                    borderColor:  isActive ? c.dot : c.border,
+                    transform:    isActive ? 'scale(1.1)' : 'scale(1)',
+                  }}
                 >
                   {bg}
                 </button>
-              ))}
-            </div>
+              );
+            })}
           </div>
-        )}
+        </div>
+      </div>
+
+      {/* ── Results ─────────────────────────────── */}
+      <div className="w-full flex-1 bg-slate-50 px-6 lg:px-12 py-8">
+
+        {/* Meta bar */}
+        <div className="flex flex-wrap items-center justify-between gap-3 mb-6">
+          <div className="flex items-center gap-2 flex-wrap">
+            <span className="text-2xl font-extrabold text-gray-900">{results.length}</span>
+            <span className="text-gray-500 text-sm">donor{results.length !== 1 ? 's' : ''} found</span>
+
+            {bloodGroup && (
+              <span
+                className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold border ml-1"
+                style={{ background: BG_COLORS[bloodGroup]?.bg, color: BG_COLORS[bloodGroup]?.text, borderColor: BG_COLORS[bloodGroup]?.border }}
+              >
+                <Droplet size={10} fill="currentColor" /> {bloodGroup}
+                <button onClick={() => setBloodGroup('')} className="ml-0.5 opacity-60 hover:opacity-100"><X size={10} /></button>
+              </span>
+            )}
+            {location && (
+              <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold bg-red-50 text-[#b80f1d] border border-red-100 ml-1">
+                <MapPin size={10} /> {location}
+                <button onClick={() => { setLocation(''); setLocationInput(''); }} className="ml-0.5 opacity-60 hover:opacity-100"><X size={10} /></button>
+              </span>
+            )}
+          </div>
+
+          <div className="flex items-center gap-1.5 text-xs text-gray-400">
+            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse inline-block" />
+            {totalAvailable} available right now
+          </div>
+        </div>
 
         {/* Cards grid */}
-        <div className="grid grid-cols-[repeat(auto-fill,minmax(280px,1fr))] gap-5">
-          {results.length > 0 ? (
-            results.map(d => <DonorCard key={d.id} donor={d} />)
-          ) : searched ? (
-            <div className="col-span-full p-20 text-center flex flex-col items-center gap-4 rounded-3xl bg-white/80 backdrop-blur-md border border-gray-200/50 shadow-lg">
-              <Droplet size={48} className="text-gray-400" />
-              <h3 className="text-xl text-gray-500 font-bold">No donors found</h3>
-              <p className="text-gray-400">Try a different blood group or location.</p>
-              <button className="inline-flex items-center justify-center gap-2 bg-gradient-to-br from-[#d41425] via-[#b80f1d] to-[#66040c] text-white px-6 py-2.5 rounded-full font-semibold border border-red-900/20 shadow-md hover:bg-[#66040c] hover:-translate-y-0.5 hover:shadow-lg transition-all mt-2" onClick={clearSearch}>Show All Donors</button>
+        {results.length > 0 ? (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+            {results.map(d => <DonorCard key={d.id} donor={d} />)}
+          </div>
+        ) : (
+          <div className="flex flex-col items-center justify-center py-28 text-center">
+            <div className="w-20 h-20 rounded-3xl bg-red-50 flex items-center justify-center mb-5">
+              <Droplet size={36} className="text-red-300" />
             </div>
-          ) : null}
-        </div>
+            <h3 className="text-xl font-bold text-gray-700 mb-2">No donors found</h3>
+            <p className="text-gray-400 text-sm max-w-xs mb-6">
+              Try a different blood group, district, or switch to "All Donors" to include unavailable donors.
+            </p>
+            <button
+              onClick={clearAll}
+              className="inline-flex items-center gap-2 bg-gradient-to-br from-[#d41425] via-[#b80f1d] to-[#66040c] text-white px-6 py-2.5 rounded-full text-sm font-semibold shadow-md hover:-translate-y-0.5 hover:shadow-lg transition-all"
+            >
+              <X size={14} /> Clear all filters
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );

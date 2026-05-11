@@ -1,114 +1,243 @@
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { Menu, X, LogOut, ChevronDown } from 'lucide-react';
-import { useState, useEffect } from 'react';
+import { Menu, X, LogOut, ChevronDown, User, LayoutDashboard, Search, Heart } from 'lucide-react';
+import { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../context/AuthContext';
 
 const Navbar = () => {
-  const [isOpen, setIsOpen] = useState(false);
-  const [scrolled, setScrolled] = useState(false);
-  const { user, logout } = useAuth();
-  const navigate = useNavigate();
-  const location = useLocation();
+  const [isOpen, setIsOpen]         = useState(false);
+  const [profileOpen, setProfileOpen] = useState(false);
+  const [scrolled, setScrolled]     = useState(false);
+  const { user, logout }            = useAuth();
+  const navigate                    = useNavigate();
+  const location                    = useLocation();
+  const profileRef                  = useRef(null);
 
+  /* scroll effect */
   useEffect(() => {
-    const updateScrolled = () => {
-      const nextScrolled = window.scrollY > 20;
-      setScrolled(prev => (prev === nextScrolled ? prev : nextScrolled));
-    };
-
-    updateScrolled();
-    window.addEventListener('scroll', updateScrolled, { passive: true });
-    return () => window.removeEventListener('scroll', updateScrolled);
+    const update = () => setScrolled(window.scrollY > 20);
+    update();
+    window.addEventListener('scroll', update, { passive: true });
+    return () => window.removeEventListener('scroll', update);
   }, []);
 
-  useEffect(() => { setIsOpen(false); }, [location]);
+  /* close mobile menu on route change */
+  useEffect(() => { setIsOpen(false); setProfileOpen(false); }, [location]);
 
-  const handleLogout = () => { logout(); navigate('/'); };
+  /* close dropdown when clicking outside */
+  useEffect(() => {
+    const handler = (e) => {
+      if (profileRef.current && !profileRef.current.contains(e.target)) {
+        setProfileOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, []);
+
+  const handleLogout = () => { logout(); navigate('/'); setProfileOpen(false); };
 
   const navLinks = [
-    { to: '/', label: 'Home' },
-    { to: '#about', label: 'About' },
-    { to: '/search', label: 'Donate' },
-    { to: '#events', label: 'Events' },
-    { to: '#blog', label: 'Blog' },
-    { to: '#contact', label: 'Contact' },
+    { to: '/',        label: 'Home'          },
+    { to: '/search',  label: 'Find Donor'    },
+    { to: '/request', label: 'Request Blood' },
+    { to: '#about',   label: 'About'         },
+    { to: '#contact', label: 'Contact'       },
   ];
   if (user?.role === 'ROLE_DONOR') navLinks.push({ to: '/donor-dashboard', label: 'Dashboard' });
 
   return (
-    <nav className={`sticky top-0 z-[900] py-4 border-b transition-all duration-300 backdrop-blur-md ${scrolled ? 'bg-white/98 shadow-[0_14px_36px_rgba(102,4,12,0.12)] border-transparent' : 'bg-white/95 border-red-700/10'}`}>
-      <div className="relative flex items-center h-[60px] w-full px-5 md:px-16 lg:px-20">
+    <nav className={`sticky top-0 z-[900] border-b transition-all duration-300 backdrop-blur-md ${
+      scrolled
+        ? 'bg-white/98 shadow-[0_8px_32px_rgba(102,4,12,0.10)] border-transparent'
+        : 'bg-white/95 border-red-700/10'
+    }`}>
+      <div className="relative flex items-center h-[64px] w-full px-5 md:px-10 lg:px-16">
 
         {/* Logo */}
         <Link to="/" className="flex items-center gap-3 shrink-0">
-          <svg className="shrink-0" width="28" height="32" viewBox="0 0 24 24" fill="#b80f1d" xmlns="http://www.w3.org/2000/svg">
+          <svg width="26" height="30" viewBox="0 0 24 24" fill="#b80f1d" xmlns="http://www.w3.org/2000/svg">
             <path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z" />
           </svg>
           <div className="flex flex-col justify-center">
-            <span className="font-extrabold text-2xl text-gray-900 leading-none tracking-tight">LifeStream</span>
-            <span className="text-[0.65rem] font-semibold text-gray-600 mt-[2px] tracking-wider uppercase">Give Blood. <span className="text-[#b80f1d] font-bold">Save Lives.</span></span>
+            <span className="font-extrabold text-[1.35rem] text-gray-900 leading-none tracking-tight">LifeStream</span>
+            <span className="text-[0.6rem] font-semibold text-gray-500 mt-[2px] tracking-wider uppercase">
+              Give Blood. <span className="text-[#b80f1d] font-bold">Save Lives.</span>
+            </span>
           </div>
         </Link>
 
-        {/* Desktop links */}
-        <ul className="hidden lg:flex absolute left-1/2 -translate-x-1/2 items-center gap-8 xl:gap-12 px-5 py-2.5 border border-red-700/15 rounded-full bg-white/95 shadow-[0_12px_30px_rgba(102,4,12,0.09)]">
+        {/* Desktop nav links */}
+        <ul className="hidden lg:flex absolute left-1/2 -translate-x-1/2 items-center gap-7 xl:gap-10 px-5 py-2 border border-red-700/12 rounded-full bg-white/95 shadow-[0_8px_24px_rgba(102,4,12,0.08)]">
           {navLinks.map(l => {
-            const isActive = location.pathname === l.to || (l.to === '/' && location.pathname === '');
+            const isActive = location.pathname === l.to;
             return (
               <li key={l.to}>
-                <Link to={l.to} className={`text-sm font-semibold transition-all hover:text-[#b80f1d] hover:-translate-y-[1px] relative py-1 ${isActive ? 'text-gray-900' : 'text-gray-700'}`}>
+                <Link
+                  to={l.to}
+                  className={`text-sm font-semibold transition-all hover:text-[#b80f1d] relative py-1 ${isActive ? 'text-[#b80f1d]' : 'text-gray-600'}`}
+                >
                   {l.label}
-                  {isActive && <span className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-5 h-0.5 rounded-full bg-gradient-to-r from-[#d41425] to-[#8c0812] shadow-[0_4px_10px_rgba(184,15,29,0.34)]"></span>}
+                  {isActive && (
+                    <span className="absolute -bottom-0.5 left-1/2 -translate-x-1/2 w-4 h-0.5 rounded-full bg-[#b80f1d]" />
+                  )}
                 </Link>
               </li>
             );
           })}
         </ul>
 
-        {/* Auth */}
-        <div className="hidden md:flex items-center shrink-0 ml-auto">
+        {/* Auth — desktop */}
+        <div className="hidden md:flex items-center shrink-0 ml-auto gap-3">
           {user ? (
-            <div className="flex items-center gap-2">
-              <div className="flex items-center gap-2 px-3 py-1.5 bg-gray-50 border border-gray-200 rounded-full cursor-default">
-                <div className="w-6 h-6 rounded-full bg-[#b80f1d] flex items-center justify-center text-[0.7rem] font-bold text-white shrink-0">
+            /* Profile dropdown */
+            <div className="relative" ref={profileRef}>
+              <button
+                onClick={() => setProfileOpen(prev => !prev)}
+                className={`flex items-center gap-2.5 pl-2 pr-3.5 py-1.5 rounded-full border transition-all duration-200 ${
+                  profileOpen
+                    ? 'bg-red-50 border-red-200 shadow-sm'
+                    : 'bg-gray-50 border-gray-200 hover:bg-red-50 hover:border-red-200'
+                }`}
+              >
+                {/* Avatar */}
+                <div className="w-7 h-7 rounded-full bg-gradient-to-br from-[#d41425] to-[#66040c] flex items-center justify-center text-[0.75rem] font-extrabold text-white shrink-0 shadow">
                   {user.name?.[0]?.toUpperCase()}
                 </div>
-                <span className="text-sm font-semibold text-gray-800">{user.name}</span>
-                <ChevronDown size={14} className="text-gray-500" />
-              </div>
-              <button onClick={handleLogout} className="flex items-center gap-1 px-3 py-1.5 text-sm text-gray-500 hover:text-[#b80f1d] hover:bg-red-50 rounded-md transition-colors">
-                <LogOut size={15} /> Logout
+                <span className="text-sm font-semibold text-gray-800 max-w-[100px] truncate">{user.name?.split(' ')[0]}</span>
+                <ChevronDown
+                  size={14}
+                  className={`text-gray-500 transition-transform duration-200 ${profileOpen ? 'rotate-180' : ''}`}
+                />
               </button>
+
+              {/* Dropdown panel */}
+              {profileOpen && (
+                <div className="absolute right-0 top-[calc(100%+8px)] w-64 bg-white rounded-2xl shadow-[0_20px_60px_rgba(0,0,0,0.12)] border border-gray-100 overflow-hidden z-[1000]">
+                  {/* User info header */}
+                  <div className="px-4 py-4 bg-gradient-to-br from-[#b80f1d] to-[#66040c] flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-full bg-white/20 border border-white/30 flex items-center justify-center text-base font-extrabold text-white shrink-0">
+                      {user.name?.[0]?.toUpperCase()}
+                    </div>
+                    <div className="overflow-hidden">
+                      <p className="font-bold text-white text-sm truncate">{user.name}</p>
+                      <p className="text-white/70 text-xs truncate">{user.email}</p>
+                    </div>
+                  </div>
+
+                  {/* Menu items */}
+                  <div className="p-2">
+                    <Link
+                      to="/donor-dashboard"
+                      onClick={() => setProfileOpen(false)}
+                      className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-gray-700 hover:bg-red-50 hover:text-[#b80f1d] transition-colors"
+                    >
+                      <LayoutDashboard size={16} className="text-gray-400" />
+                      My Dashboard
+                    </Link>
+                    <Link
+                      to="/search"
+                      onClick={() => setProfileOpen(false)}
+                      className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-gray-700 hover:bg-red-50 hover:text-[#b80f1d] transition-colors"
+                    >
+                      <Search size={16} className="text-gray-400" />
+                      Find Donor
+                    </Link>
+                    <Link
+                      to="/request"
+                      onClick={() => setProfileOpen(false)}
+                      className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-gray-700 hover:bg-red-50 hover:text-[#b80f1d] transition-colors"
+                    >
+                      <Heart size={16} className="text-gray-400" />
+                      Request Blood
+                    </Link>
+                  </div>
+
+                  <div className="h-px bg-gray-100 mx-2" />
+
+                  <div className="p-2">
+                    <button
+                      onClick={handleLogout}
+                      className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-red-600 hover:bg-red-50 transition-colors"
+                    >
+                      <LogOut size={16} />
+                      Sign Out
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
           ) : (
-            <Link to="/register" className="bg-gradient-to-br from-[#d41425] via-[#b80f1d] to-[#66040c] text-white rounded-full px-6 py-2.5 font-semibold text-sm shadow-[0_12px_28px_rgba(184,15,29,0.32)] hover:shadow-[0_18px_36px_rgba(102,4,12,0.36)] transition-all hover:-translate-y-[2px]">
-              Register Now
-            </Link>
+            <div className="flex items-center gap-2">
+              <Link
+                to="/login"
+                className="px-4 py-2 text-sm font-semibold text-gray-600 hover:text-[#b80f1d] transition-colors"
+              >
+                Log In
+              </Link>
+              <Link
+                to="/register"
+                className="bg-gradient-to-br from-[#d41425] via-[#b80f1d] to-[#66040c] text-white rounded-full px-5 py-2 font-semibold text-sm shadow-[0_8px_20px_rgba(184,15,29,0.28)] hover:shadow-[0_12px_28px_rgba(102,4,12,0.32)] transition-all hover:-translate-y-[1px]"
+              >
+                Get Started
+              </Link>
+            </div>
           )}
         </div>
 
         {/* Hamburger */}
-        <button className="md:hidden flex ml-auto text-gray-800 p-2 rounded-md hover:bg-gray-100 transition-colors" onClick={() => setIsOpen(!isOpen)} aria-label="Toggle menu">
-          {isOpen ? <X size={24} /> : <Menu size={24} />}
+        <button
+          className="md:hidden flex ml-auto text-gray-700 p-2 rounded-xl hover:bg-gray-100 transition-colors"
+          onClick={() => setIsOpen(!isOpen)}
+          aria-label="Toggle menu"
+        >
+          {isOpen ? <X size={22} /> : <Menu size={22} />}
         </button>
       </div>
 
       {/* Mobile drawer */}
-      <div className={`md:hidden absolute top-full left-0 right-0 bg-white border-b border-gray-200 p-6 flex flex-col gap-2 shadow-lg transition-all duration-300 origin-top ${isOpen ? 'opacity-100 scale-y-100 pointer-events-auto' : 'opacity-0 scale-y-95 pointer-events-none'}`}>
-        {navLinks.map(l => (
-          <Link key={l.to} to={l.to} className={`px-4 py-3 rounded-md font-medium transition-colors ${location.pathname === l.to ? 'text-[#b80f1d] bg-red-50' : 'text-gray-700 hover:text-[#b80f1d] hover:bg-gray-50'}`}>
-            {l.label}
-          </Link>
-        ))}
-        <div className="flex flex-col gap-2 mt-4 pt-4 border-t border-gray-100">
+      <div className={`md:hidden absolute top-full left-0 right-0 bg-white border-b border-gray-100 shadow-xl transition-all duration-300 origin-top z-50 ${
+        isOpen ? 'opacity-100 scale-y-100 pointer-events-auto' : 'opacity-0 scale-y-95 pointer-events-none'
+      }`}>
+        {user && (
+          <div className="flex items-center gap-3 px-5 py-4 bg-gradient-to-r from-red-50 to-white border-b border-red-100">
+            <div className="w-9 h-9 rounded-full bg-gradient-to-br from-[#d41425] to-[#66040c] flex items-center justify-center text-sm font-extrabold text-white">
+              {user.name?.[0]?.toUpperCase()}
+            </div>
+            <div>
+              <p className="font-bold text-gray-900 text-sm">{user.name}</p>
+              <p className="text-gray-500 text-xs">{user.email}</p>
+            </div>
+          </div>
+        )}
+
+        <div className="p-4 flex flex-col gap-1">
+          {navLinks.map(l => (
+            <Link
+              key={l.to} to={l.to}
+              className={`px-4 py-3 rounded-xl text-sm font-semibold transition-colors ${
+                location.pathname === l.to
+                  ? 'bg-red-50 text-[#b80f1d]'
+                  : 'text-gray-700 hover:bg-gray-50 hover:text-[#b80f1d]'
+              }`}
+            >
+              {l.label}
+            </Link>
+          ))}
+        </div>
+
+        <div className="px-4 pb-4">
           {user ? (
-            <button onClick={handleLogout} className="flex items-center justify-center gap-2 px-4 py-3 w-full bg-gray-50 border border-gray-200 text-gray-700 rounded-md font-medium hover:bg-red-50 hover:text-[#b80f1d] hover:border-red-100 transition-colors">
-              <LogOut size={16} /> Logout
+            <button
+              onClick={handleLogout}
+              className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl text-sm font-semibold text-red-600 bg-red-50 hover:bg-red-100 border border-red-100 transition-colors"
+            >
+              <LogOut size={15} /> Sign Out
             </button>
           ) : (
-            <Link to="/register" className="text-center bg-[#b80f1d] text-white px-4 py-3 rounded-md font-medium shadow-md hover:bg-[#990a16] transition-colors">
-              Register Now
-            </Link>
+            <div className="flex flex-col gap-2">
+              <Link to="/login" className="text-center px-4 py-3 rounded-xl text-sm font-semibold text-gray-700 border border-gray-200 hover:bg-gray-50 transition-colors">Log In</Link>
+              <Link to="/register" className="text-center px-4 py-3 rounded-xl text-sm font-bold text-white bg-[#b80f1d] hover:bg-[#990a16] transition-colors">Get Started</Link>
+            </div>
           )}
         </div>
       </div>
