@@ -1,10 +1,10 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
+import { useAuth } from '../context/useAuth';
 import {
-  Droplet, MapPin, Activity, Search, AlertCircle,
+  Droplet, MapPin, Activity, Search,
   CheckCircle2, XCircle, Clock, Heart, Zap, Shield,
-  ChevronRight, Edit3,
+  ChevronRight, CalendarDays,
 } from 'lucide-react';
 import api from '../services/api';
 
@@ -37,6 +37,7 @@ const DonorDashboard = () => {
   const [donorProfile, setDonorProfile] = useState(null);
   const [loading, setLoading]           = useState(true);
   const [saving, setSaving]             = useState(false);
+  const [error, setError]               = useState('');
   const [form, setForm]                 = useState({ bloodGroup: 'A+', location: '' });
 
   useEffect(() => {
@@ -49,21 +50,23 @@ const DonorDashboard = () => {
   const registerDonor = async (e) => {
     e.preventDefault();
     setSaving(true);
+    setError('');
     try {
       const r = await api.post('/donors/register', { ...form, status: 'Available' });
       setDonorProfile(r.data);
     } catch (err) {
-      alert(err.response?.data || 'Could not register. Check backend connection.');
+      setError(err.response?.data || 'Could not register. Please check your login and backend connection.');
     } finally { setSaving(false); }
   };
 
   const toggleStatus = async () => {
     const next = donorProfile.status === 'Available' ? 'Not Available' : 'Available';
     setSaving(true);
+    setError('');
     try {
       await api.put(`/donors/status?status=${next}`);
       setDonorProfile(prev => ({ ...prev, status: next }));
-    } catch { alert('Could not update status.'); }
+    } catch { setError('Could not update status. Please log in again and try once more.'); }
     finally { setSaving(false); }
   };
 
@@ -72,6 +75,23 @@ const DonorDashboard = () => {
     <div className="flex flex-col items-center justify-center min-h-[calc(100vh-64px)] gap-4">
       <div className="w-10 h-10 border-4 border-gray-100 border-t-[#b80f1d] rounded-full animate-spin" />
       <p className="text-sm text-gray-400 font-medium">Loading your dashboard…</p>
+    </div>
+  );
+
+  if (!user) return (
+    <div className="flex min-h-[calc(100vh-64px)] items-center justify-center bg-gradient-to-br from-gray-50 via-white to-red-50 p-6">
+      <div className="max-w-md rounded-3xl border border-red-100 bg-white p-8 text-center shadow-xl">
+        <div className="mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-2xl bg-red-50 text-[#b80f1d]">
+          <Shield size={30} />
+        </div>
+        <h1 className="text-2xl font-extrabold text-gray-900">Login required</h1>
+        <p className="mt-2 text-sm leading-relaxed text-gray-500">
+          Please log in to manage your donor profile, availability, and dashboard actions.
+        </p>
+        <Link to="/login" className="mt-6 inline-flex w-full items-center justify-center rounded-full bg-[#b80f1d] px-5 py-3 text-sm font-bold text-white transition-all hover:bg-[#990a16]">
+          Go to Login
+        </Link>
+      </div>
     </div>
   );
 
@@ -103,12 +123,21 @@ const DonorDashboard = () => {
                 className="inline-flex items-center gap-2 bg-white text-[#b80f1d] text-sm font-bold px-4 py-2.5 rounded-full shadow hover:shadow-md transition-all">
                 <Heart size={15} fill="currentColor" /> Request Blood
               </Link>
+              <Link to="/events"
+                className="inline-flex items-center gap-2 bg-white/15 hover:bg-white/25 backdrop-blur-sm border border-white/20 text-white text-sm font-semibold px-4 py-2.5 rounded-full transition-all">
+                <CalendarDays size={15} /> Live Events
+              </Link>
             </div>
           </div>
         </div>
       </div>
 
       <div className="w-full px-6 lg:px-12 py-8">
+        {error && (
+          <div className="mb-5 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-semibold text-red-700">
+            {error}
+          </div>
+        )}
 
         {!donorProfile ? (
           /* ── SETUP PROFILE ───────────────────────────── */
@@ -293,7 +322,7 @@ const DonorDashboard = () => {
                     {[
                       { icon: Search,  label: 'Find Donors',    sub: 'Browse nearby donors',    to: '/search',  color: '#2563eb', bg: '#eff6ff' },
                       { icon: Heart,   label: 'Request Blood',  sub: 'Create a blood request',  to: '/request', color: '#e11d48', bg: '#fff1f2' },
-                      { icon: Edit3,   label: 'Update Profile', sub: 'Edit your information',   to: '#',        color: '#7c3aed', bg: '#f5f3ff' },
+                      { icon: CalendarDays, label: 'Live Events', sub: 'Join nearby blood drives', to: '/events', color: '#7c3aed', bg: '#f5f3ff' },
                     ].map(({ icon: Icon, label, sub, to, color, bg }) => (
                       <Link key={label} to={to}
                         className="flex items-center gap-3 p-4 rounded-2xl border border-gray-100 hover:shadow-md hover:-translate-y-0.5 transition-all"

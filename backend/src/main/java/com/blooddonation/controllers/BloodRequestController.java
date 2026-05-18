@@ -26,6 +26,15 @@ public class BloodRequestController {
         request.setRecipientId(userDetails.getId());
         request.setStatus("Pending");
         request.setCreatedAt(LocalDateTime.now());
+        if (request.getRequesterName() == null || request.getRequesterName().isBlank()) {
+            request.setRequesterName(userDetails.getName());
+        }
+        if (request.getContact() == null || request.getContact().isBlank()) {
+            request.setContact(userDetails.getEmail());
+        }
+        if (request.getHospital() == null || request.getHospital().isBlank()) {
+            request.setHospital(request.getLocation());
+        }
         
         BloodRequest savedRequest = bloodRequestRepository.save(request);
         return ResponseEntity.ok(savedRequest);

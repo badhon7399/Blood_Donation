@@ -1,10 +1,11 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import {
-  Search, MapPin, Droplet, User as UserIcon, Phone,
-  X, ChevronDown, Heart, Clock,
+  Search, MapPin, Droplet, Phone, X, ChevronDown, Heart, Clock, Radio,
 } from 'lucide-react';
 import { DUMMY_DONORS } from '../data/dummyDonors';
+import LiveLocationMap from '../components/LiveLocationMap';
+import { toDonorMapItem } from '../data/liveMapData';
 
 const BLOOD_GROUPS = ['A+', 'A-', 'B+', 'B-', 'O+', 'O-', 'AB+', 'AB-'];
 const LOCATIONS = [...new Set(DUMMY_DONORS.map(d => d.location))].sort();
@@ -29,6 +30,7 @@ const DonorCard = ({ donor }) => {
   const c = BG_COLORS[donor.bloodGroup] || BG_COLORS['A+'];
   const days = getLastDonationDays(donor.lastDonation);
   const isAvailable = donor.status === 'Available';
+  const [contactVisible, setContactVisible] = useState(false);
 
   return (
     <article className="group flex flex-col bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-300 overflow-hidden">
@@ -89,7 +91,7 @@ const DonorCard = ({ donor }) => {
       <div className="px-6 pb-6 mt-auto">
         <button
           disabled={!isAvailable}
-          onClick={() => isAvailable && alert(`Contact info shown after login.\n${donor.name} — ${donor.bloodGroup}`)}
+          onClick={() => setContactVisible(prev => !prev)}
           className="w-full flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-bold transition-all duration-200 border"
           style={{
             background: isAvailable ? c.bg : '#f9fafb',
@@ -112,8 +114,16 @@ const DonorCard = ({ donor }) => {
           }}
         >
           <Phone size={14} />
-          {isAvailable ? 'Contact Donor' : 'Currently Unavailable'}
+          {isAvailable ? (contactVisible ? 'Hide Contact' : 'View Contact') : 'Currently Unavailable'}
         </button>
+        {contactVisible && (
+          <div className="mt-3 rounded-xl border border-emerald-100 bg-emerald-50 px-4 py-3 text-sm">
+            <p className="font-bold text-emerald-800">{donor.phone}</p>
+            <p className="mt-1 text-xs font-semibold text-emerald-700/75">
+              {donor.name} is marked available for {donor.bloodGroup} donation.
+            </p>
+          </div>
+        )}
       </div>
     </article>
   );
@@ -127,6 +137,7 @@ const FindDonor = () => {
   const [location, setLocation]             = useState(searchParams.get('location') || '');
   const [locationInput, setLocationInput]   = useState(searchParams.get('location') || '');
   const [availability, setAvailability]     = useState('Available');
+  const [activeDonorId, setActiveDonorId]   = useState(DUMMY_DONORS[0]?.id);
 
   /* Live results — all filters reactive */
   const results = useMemo(() => {
@@ -139,6 +150,17 @@ const FindDonor = () => {
     if (availability !== 'All') out = out.filter(d => d.status === availability);
     return out;
   }, [bloodGroup, location, availability]);
+
+  const donorMapItems = useMemo(() => results.map(toDonorMapItem), [results]);
+  const visibleActiveDonorId = results.some(donor => donor.id === activeDonorId)
+    ? activeDonorId
+    : results[0]?.id;
+  const donorSummary = [
+    { label: 'Visible', value: results.length },
+    { label: 'Available', value: results.filter(donor => donor.status === 'Available').length },
+    { label: 'Districts', value: new Set(results.map(donor => donor.location)).size },
+    { label: 'Groups', value: new Set(results.map(donor => donor.bloodGroup)).size },
+  ];
 
   const hasFilters = bloodGroup || location;
 
@@ -159,7 +181,7 @@ const FindDonor = () => {
     if (bloodGroup) params.bloodGroup = bloodGroup;
     if (location)   params.location   = location;
     setSearchParams(params);
-  }, [bloodGroup, location]);
+  }, [bloodGroup, location, setSearchParams]);
 
   const totalAvailable = DUMMY_DONORS.filter(d => d.status === 'Available').length;
 
@@ -331,6 +353,29 @@ const FindDonor = () => {
           </div>
         </div>
 
+        <div className="mb-8">
+          <div className="mb-4 flex flex-wrap items-end justify-between gap-3">
+            <div>
+              <p className="text-xs font-bold uppercase tracking-widest text-[#b80f1d]">Live Donor Locations</p>
+              <h2 className="text-2xl font-extrabold text-gray-900">Available donors on Bangladesh map</h2>
+            </div>
+            <div className="inline-flex items-center gap-2 rounded-full border border-emerald-200 bg-emerald-50 px-4 py-2 text-xs font-bold text-emerald-700">
+              <Radio size={14} className="animate-pulse" />
+              {donorSummary[1].value} active now
+            </div>
+          </div>
+          <LiveLocationMap
+            items={donorMapItems}
+            activeItemId={visibleActiveDonorId}
+            onSelectItem={setActiveDonorId}
+            eyebrow="Donor Live Map"
+            title="Live Donor Locations"
+            panelTitle="Selected Donor"
+            summary={donorSummary}
+            mapHeight="min-h-[500px]"
+          />
+        </div>
+
         {/* Cards grid */}
         {results.length > 0 ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
@@ -343,7 +388,7 @@ const FindDonor = () => {
             </div>
             <h3 className="text-xl font-bold text-gray-700 mb-2">No donors found</h3>
             <p className="text-gray-400 text-sm max-w-xs mb-6">
-              Try a different blood group, district, or switch to "All Donors" to include unavailable donors.
+              Try a different blood group, district, or switch to All Donors to include unavailable donors.
             </p>
             <button
               onClick={clearAll}

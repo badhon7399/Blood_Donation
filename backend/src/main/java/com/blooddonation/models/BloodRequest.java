@@ -19,5 +19,14 @@ public class BloodRequest {
     private String urgency; // Normal, Urgent, Critical
     private String status; // Pending, Accepted, Fulfilled, Cancelled
     private String location;
+    private String title;
+    private String requesterName;
+    private String contact;
+    private String hospital;
+    private String city;
+    private String area;
+    private String time;
+    private Double latitude;
+    private Double longitude;
     private LocalDateTime createdAt = LocalDateTime.now();
 }

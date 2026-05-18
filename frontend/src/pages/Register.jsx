@@ -1,15 +1,10 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
+import { useAuth } from '../context/useAuth';
 import { User, Mail, Lock, Phone, AlertCircle, Droplet, Eye, EyeOff } from 'lucide-react';
 import registerHero from '../assets/bg_hand.png';
 
-const ROLES = [
-  { value: 'donor', label: '🩸 I want to Donate Blood' },
-  { value: 'recipient', label: '🏥 I need Blood (Recipient)' },
-];
-
-const Register = () => {
+const Register = ({ initialView = 'register' }) => {
   const [formData, setFormData] = useState({ name: '', email: '', password: '', phone: '', role: 'donor' });
   const [loginData, setLoginData] = useState({ email: '', password: '' });
   const [showPwd, setShowPwd] = useState({ register: false, login: false });
@@ -17,7 +12,7 @@ const Register = () => {
   const [loginError, setLoginError] = useState('');
   const [success, setSuccess] = useState('');
   const [loading, setLoading] = useState({ register: false, login: false });
-  const [isLoginView, setIsLoginView] = useState(false);
+  const [isLoginView, setIsLoginView] = useState(initialView === 'login');
   const navigate = useNavigate();
   const { register, login } = useAuth();
 
@@ -104,24 +99,12 @@ const Register = () => {
               </div>
 
               <h1 className="text-[clamp(2rem,3vw,2.65rem)] text-left mb-2 font-bold text-gray-900 leading-tight">Create your account</h1>
-              <p className="text-[0.9rem] text-gray-500 text-left mb-7 max-w-[440px] leading-relaxed">Join Bangladesh's largest blood donor network - free forever</p>
+              <p className="text-[0.9rem] text-gray-500 text-left mb-7 max-w-[440px] leading-relaxed">Create one account to donate blood, request blood, and join live donation events.</p>
 
               {error && <div className="flex items-start gap-3 p-4 mb-4 rounded-lg bg-red-50 text-red-800 border border-red-200 text-sm"><AlertCircle size={16} /> {error}</div>}
               {success && <div className="flex items-start gap-3 p-4 mb-4 rounded-lg bg-green-50 text-green-800 border border-green-200 text-sm"><AlertCircle size={16} /> {success}</div>}
 
               <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-                <div className="flex flex-col gap-2">
-                  <label className="text-sm font-semibold text-gray-900">I am a...</label>
-                  <div className="flex flex-col sm:flex-row gap-3">
-                    {ROLES.map(role => (
-                      <label key={role.value} className={`flex-1 min-w-[160px] flex items-center justify-center p-3 border rounded-lg cursor-pointer text-sm font-semibold transition-all text-center ${formData.role === role.value ? 'border-[#b80f1d] bg-gradient-to-br from-red-50 to-orange-50 text-[#c1121f] shadow-[0_12px_26px_rgba(193,18,31,0.09)]' : 'border-gray-200 text-gray-500 bg-white hover:border-red-200 hover:text-gray-900 hover:bg-orange-50'}`}>
-                        <input type="radio" name="role" value={role.value} checked={formData.role === role.value} onChange={set('role')} className="hidden" />
-                        {role.label}
-                      </label>
-                    ))}
-                  </div>
-                </div>
-
                 <div className="flex flex-col gap-2">
                   <label className="text-sm font-semibold text-gray-900" htmlFor="reg-name">Full Name</label>
                   <div className="relative">

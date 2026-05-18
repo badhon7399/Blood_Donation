@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom';
-import { Heart, Activity, Users, MapPin, Droplet, Shield, Smile, ArrowRight } from 'lucide-react';
+import { Heart, Activity, Users, MapPin, Droplet, Shield, Smile, ArrowRight, Radio } from 'lucide-react';
+import { EVENT_STATS, LIVE_EVENTS } from '../data/liveEvents';
 import heroImg from '../assets/bg_hand.png';
 import ctaImg from '../assets/cta_arm_donating.png';
 
@@ -26,7 +27,7 @@ const Home = () => (
             <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent -translate-x-[120%] group-hover:translate-x-[120%] transition-transform duration-700"></div>
             <Droplet size={18} fill="currentColor" /> Donate Now
           </Link>
-          <Link to="/search" className="inline-flex items-center justify-center gap-2 bg-white/80 backdrop-blur-md text-[#b80f1d] px-7 py-3.5 rounded-full font-semibold border border-[#b80f1d]/20 shadow-[0_12px_32px_rgba(102,4,12,0.08)] hover:bg-white hover:-translate-y-1 hover:border-[#b80f1d]/40 hover:shadow-[0_18px_36px_rgba(184,15,29,0.16)] transition-all duration-300">
+          <Link to="/events" className="inline-flex items-center justify-center gap-2 bg-white/80 backdrop-blur-md text-[#b80f1d] px-7 py-3.5 rounded-full font-semibold border border-[#b80f1d]/20 shadow-[0_12px_32px_rgba(102,4,12,0.08)] hover:bg-white hover:-translate-y-1 hover:border-[#b80f1d]/40 hover:shadow-[0_18px_36px_rgba(184,15,29,0.16)] transition-all duration-300">
             Find a Drive <MapPin size={18} />
           </Link>
         </div>
@@ -56,6 +57,44 @@ const Home = () => (
         <div className="absolute text-[#b80f1d] font-bold opacity-70 animate-[twinkleFloat_3s_ease-in-out_infinite] z-30 top-[22%] right-[18%] text-lg" style={{ animationDelay: '0.45s' }}>+</div>
         <div className="absolute text-[#b80f1d] font-bold opacity-70 animate-[twinkleFloat_3s_ease-in-out_infinite] z-30 bottom-[28%] right-[30%] text-xl" style={{ animationDelay: '1.05s' }}>+</div>
         <div className="absolute text-[#b80f1d] font-bold opacity-50 animate-[twinkleFloat_3s_ease-in-out_infinite] z-30 top-[42%] left-[2%] text-base" style={{ animationDelay: '1.75s' }}>+</div>
+      </div>
+    </section>
+
+    {/* ── Live Events Preview ─────────────────── */}
+    <section className="relative z-10 mx-4 my-12 overflow-hidden rounded-[36px] border border-[#b80f1d]/10 bg-white px-6 py-16 shadow-[0_24px_70px_rgba(102,4,12,0.07)] md:mx-10 md:px-12">
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_18%_18%,rgba(184,15,29,0.08),transparent_28%),radial-gradient(circle_at_88%_62%,rgba(245,158,11,0.09),transparent_24%)] pointer-events-none"></div>
+      <div className="relative mx-auto grid max-w-[1400px] gap-10 lg:grid-cols-[0.9fr_1.1fr] lg:items-center">
+        <div>
+          <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-red-100 bg-red-50 px-4 py-2 text-xs font-bold uppercase tracking-widest text-[#b80f1d]">
+            <Radio size={14} className="animate-pulse" />
+            {EVENT_STATS.live} live now
+          </div>
+          <h2 className="text-3xl font-extrabold leading-tight text-gray-900 md:text-4xl">
+            Find donation events happening near you.
+          </h2>
+          <p className="mt-4 max-w-[520px] text-base leading-relaxed text-gray-600">
+            Watch active drives across Bangladesh, check needed blood groups, and join the closest life-saving event.
+          </p>
+          <Link to="/events" className="mt-7 inline-flex items-center justify-center gap-2 rounded-full bg-gradient-to-br from-[#d41425] via-[#b80f1d] to-[#66040c] px-6 py-3 text-sm font-bold text-white shadow-[0_16px_34px_rgba(184,15,29,0.28)] transition-all hover:-translate-y-1 hover:shadow-[0_22px_46px_rgba(102,4,12,0.34)]">
+            Explore Live Map <ArrowRight size={17} />
+          </Link>
+        </div>
+
+        <div className="grid gap-3 sm:grid-cols-3">
+          {LIVE_EVENTS.slice(0, 3).map(event => (
+            <Link key={event.id} to="/events" className="rounded-3xl border border-gray-100 bg-white/85 p-5 shadow-sm transition-all hover:-translate-y-1 hover:border-red-200 hover:shadow-lg">
+              <span className={`mb-4 inline-flex rounded-full border px-3 py-1 text-xs font-bold ${event.status === 'Live' ? 'border-red-200 bg-red-50 text-red-700' : 'border-sky-200 bg-sky-50 text-sky-700'}`}>
+                {event.status}
+              </span>
+              <h3 className="text-base font-extrabold leading-tight text-gray-900">{event.city}</h3>
+              <p className="mt-2 text-sm font-semibold text-gray-600">{event.title}</p>
+              <p className="mt-3 flex items-center gap-1.5 text-xs text-gray-400">
+                <MapPin size={13} />
+                {event.area}
+              </p>
+            </Link>
+          ))}
+        </div>
       </div>
     </section>
 

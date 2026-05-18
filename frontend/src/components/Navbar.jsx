@@ -1,7 +1,7 @@
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { Menu, X, LogOut, ChevronDown, User, LayoutDashboard, Search, Heart } from 'lucide-react';
+import { Menu, X, LogOut, ChevronDown, LayoutDashboard, Search, Heart, CalendarDays } from 'lucide-react';
 import { useState, useEffect, useRef } from 'react';
-import { useAuth } from '../context/AuthContext';
+import { useAuth } from '../context/useAuth';
 
 const Navbar = () => {
   const [isOpen, setIsOpen]         = useState(false);
@@ -40,15 +40,16 @@ const Navbar = () => {
     { to: '/',        label: 'Home'          },
     { to: '/search',  label: 'Find Donor'    },
     { to: '/request', label: 'Request Blood' },
-    { to: '#about',   label: 'About'         },
-    { to: '#contact', label: 'Contact'       },
+    { to: '/blood-needs', label: 'Blood Needs' },
+    { to: '/events',  label: 'Events'        },
+    { to: '/about',   label: 'About'         },
+    { to: '/contact', label: 'Contact'       },
   ];
-  if (user?.role === 'ROLE_DONOR') navLinks.push({ to: '/donor-dashboard', label: 'Dashboard' });
 
   return (
     <nav className={`sticky top-0 z-[900] border-b transition-all duration-300 backdrop-blur-md ${
       scrolled
-        ? 'bg-white/98 shadow-[0_8px_32px_rgba(102,4,12,0.10)] border-transparent'
+        ? 'bg-white/95 shadow-[0_8px_32px_rgba(102,4,12,0.10)] border-transparent'
         : 'bg-white/95 border-red-700/10'
     }`}>
       <div className="relative flex items-center h-[64px] w-full px-5 md:px-10 lg:px-16">
@@ -143,6 +144,14 @@ const Navbar = () => {
                       Find Donor
                     </Link>
                     <Link
+                      to="/events"
+                      onClick={() => setProfileOpen(false)}
+                      className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-gray-700 hover:bg-red-50 hover:text-[#b80f1d] transition-colors"
+                    >
+                      <CalendarDays size={16} className="text-gray-400" />
+                      Live Events
+                    </Link>
+                    <Link
                       to="/request"
                       onClick={() => setProfileOpen(false)}
                       className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-gray-700 hover:bg-red-50 hover:text-[#b80f1d] transition-colors"
@@ -168,12 +177,6 @@ const Navbar = () => {
             </div>
           ) : (
             <div className="flex items-center gap-2">
-              <Link
-                to="/login"
-                className="px-4 py-2 text-sm font-semibold text-gray-600 hover:text-[#b80f1d] transition-colors"
-              >
-                Log In
-              </Link>
               <Link
                 to="/register"
                 className="bg-gradient-to-br from-[#d41425] via-[#b80f1d] to-[#66040c] text-white rounded-full px-5 py-2 font-semibold text-sm shadow-[0_8px_20px_rgba(184,15,29,0.28)] hover:shadow-[0_12px_28px_rgba(102,4,12,0.32)] transition-all hover:-translate-y-[1px]"
@@ -235,7 +238,6 @@ const Navbar = () => {
             </button>
           ) : (
             <div className="flex flex-col gap-2">
-              <Link to="/login" className="text-center px-4 py-3 rounded-xl text-sm font-semibold text-gray-700 border border-gray-200 hover:bg-gray-50 transition-colors">Log In</Link>
               <Link to="/register" className="text-center px-4 py-3 rounded-xl text-sm font-bold text-white bg-[#b80f1d] hover:bg-[#990a16] transition-colors">Get Started</Link>
             </div>
           )}

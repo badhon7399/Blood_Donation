@@ -3,11 +3,14 @@ import Navbar from './components/Navbar';
 import { AuthProvider } from './context/AuthContext';
 // Pages
 import Home from './pages/Home';
-import Login from './pages/Login';
 import Register from './pages/Register';
 import DonorDashboard from './pages/DonorDashboard';
 import FindDonor from './pages/FindDonor';
 import CreateRequest from './pages/CreateRequest';
+import BloodNeeds from './pages/BloodNeeds';
+import Events from './pages/Events';
+import About from './pages/About';
+import Contact from './pages/Contact';
 
 function App() {
   return (
@@ -18,12 +21,16 @@ function App() {
           <main className="flex-grow flex flex-col w-full">
             <Routes>
               <Route path="/" element={<Home />} />
-              <Route path="/login" element={<Login />} />
-              <Route path="/register" element={<Register />} />
+              <Route path="/login" element={<Register initialView="login" />} />
+              <Route path="/register" element={<Register initialView="register" />} />
               <Route path="/donor-dashboard" element={<DonorDashboard />} />
               
               <Route path="/search" element={<FindDonor />} />
               <Route path="/request" element={<CreateRequest />} />
+              <Route path="/blood-needs" element={<BloodNeeds />} />
+              <Route path="/events" element={<Events />} />
+              <Route path="/about" element={<About />} />
+              <Route path="/contact" element={<Contact />} />
             </Routes>
           </main>
         </div>
